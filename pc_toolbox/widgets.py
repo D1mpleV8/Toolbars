@@ -8,15 +8,15 @@ class DigitalRainCanvas(tk.Canvas):
     """
     Subtle, elegant high-tech Matrix digital code stream with thin, glowing
     semi-transparent trails that float dynamically in the background.
-    Optimized to be resource-friendly, using an ahead-of-its-time holographic palette.
+    Highly optimized for resource friendliness.
     """
-    def __init__(self, master, color="#00ffcc", bg_color="#080c10", **kwargs):
+    def __init__(self, master, color="#00ff00", bg_color="#000000", **kwargs):
         super().__init__(master, bg=bg_color, highlightthickness=0, **kwargs)
         self.color = color
         self.bg_color = bg_color
         self.columns = []
         self.font_size = 13
-        # Futuristic glyphs/symbols
+        # Matrix glyphs/symbols
         self.chars = "ΞΟΦΨΩαβγδεζηθικλμνξοπρστυφχψω0123456789ΔΛ"
         self.bind("<Configure>", self.on_resize)
         self.running = True
@@ -55,17 +55,17 @@ class DigitalRainCanvas(tk.Canvas):
                     if 0 <= char_y < height:
                         char = random.choice(self.chars) if random.random() < 0.05 else col["chars"][int(char_y // self.font_size) % len(col["chars"])]
 
-                        # High-tech gradient: bright white head, neon mint/cyan trail, fading into deep obsidian
+                        # Elegant high-end Matrix palette
                         if j == 0:
                             col_val = "#ffffff"  # Glowing core
                         elif j < 3:
-                            col_val = "#00ffcc"  # Neon Mint
+                            col_val = "#00ffcc"  # Cyber-mint/teal highlight
                         elif j < 7:
-                            col_val = "#00b3e6"  # Electric Cyan
+                            col_val = "#00ff00"  # Neon green core
                         elif j < 11:
-                            col_val = "#005580"  # Deep Tech Blue
+                            col_val = "#008800"  # Deep green
                         else:
-                            col_val = "#0c151c"  # Dark Ambient Cyber
+                            col_val = "#003300"  # Subtle fading green
 
                         self.create_text(
                             x, char_y,
@@ -81,10 +81,10 @@ class DigitalRainCanvas(tk.Canvas):
 
 class ScanningEffect(tk.Canvas):
     """
-    Holographic Circular Sci-Fi Scanner with clean circular orbits, orbital arcs,
-    grid alignment ticks, and glowing data blips in Neon Mint.
+    Circular Sci-Fi Radar Scanner with clean circular orbits, orbital arcs,
+    grid alignment ticks, and glowing data blips in Neon Green.
     """
-    def __init__(self, master, color="#00ffcc", bg_color="#080c10", **kwargs):
+    def __init__(self, master, color="#00ff00", bg_color="#000000", **kwargs):
         super().__init__(master, bg=bg_color, highlightthickness=0, **kwargs)
         self.color = color
         self.angle = 0
@@ -108,23 +108,23 @@ class ScanningEffect(tk.Canvas):
 
             # Sophisticated futuristic design elements (Holographic guidelines)
             # Outer rings
-            self.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#0d2535", width=1)
-            self.create_oval(cx - r*0.8, cy - r*0.8, cx + r*0.8, cy + r*0.8, outline="#143c54", width=1.5)
-            self.create_oval(cx - r*0.5, cy - r*0.5, cx + r*0.5, cy + r*0.5, outline="#0d2535", width=1)
+            self.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#002200", width=1)
+            self.create_oval(cx - r*0.8, cy - r*0.8, cx + r*0.8, cy + r*0.8, outline="#004400", width=1.5)
+            self.create_oval(cx - r*0.5, cy - r*0.5, cx + r*0.5, cy + r*0.5, outline="#002200", width=1)
 
             # Grid Crosshairs
-            self.create_line(cx - r, cy, cx + r, cy, fill="#0d2535", width=1, dash=(4, 4))
-            self.create_line(cx, cy - r, cx, cy + r, fill="#0d2535", width=1, dash=(4, 4))
+            self.create_line(cx - r, cy, cx + r, cy, fill="#002200", width=1, dash=(4, 4))
+            self.create_line(cx, cy - r, cx, cy + r, fill="#002200", width=1, dash=(4, 4))
 
-            # Clean sweep line (glowing Mint gradient)
+            # Clean sweep line (glowing neon-green gradient)
             rad = math.radians(self.angle)
             lx = cx + r * math.cos(rad)
             ly = cy + r * math.sin(rad)
-            self.create_line(cx, cy, lx, ly, fill="#00ffcc", width=2.5)
+            self.create_line(cx, cy, lx, ly, fill="#00ff00", width=2.5)
 
             # Orbital arc elements (flickering details)
-            self.create_arc(cx - r*1.05, cy - r*1.05, cx + r*1.05, cy + r*1.05, start=self.angle, extent=60, outline="#00e5ff", width=2, style="arc")
-            self.create_arc(cx - r*0.9, cy - r*0.9, cx + r*0.9, cy + r*0.9, start=self.angle + 180, extent=45, outline="#00ffcc", width=1, style="arc")
+            self.create_arc(cx - r*1.05, cy - r*1.05, cx + r*1.05, cy + r*1.05, start=self.angle, extent=60, outline="#00ffcc", width=2, style="arc")
+            self.create_arc(cx - r*0.9, cy - r*0.9, cx + r*0.9, cy + r*0.9, start=self.angle + 180, extent=45, outline="#00ff00", width=1, style="arc")
 
             # Soft glowing targets (blips)
             random.seed(99)  # Uniform mock positions
@@ -134,7 +134,7 @@ class ScanningEffect(tk.Canvas):
                 dist = math.sqrt((bx-cx)**2 + (by-cy)**2)
                 if dist < r * 0.9:
                     alpha_factor = abs(math.sin(math.radians(self.angle - i*30)))
-                    glow_color = "#00ffcc" if alpha_factor > 0.5 else "#005550"
+                    glow_color = "#00ff00" if alpha_factor > 0.5 else "#003300"
                     self.create_oval(bx-5, by-5, bx+5, by+5, fill=glow_color, outline="#ffffff", width=1)
 
             self.angle = (self.angle + 2) % 360
@@ -146,18 +146,18 @@ class ScanningEffect(tk.Canvas):
 
 class CyberButton(ctk.CTkButton):
     """
-    Sleek, futuristic tactile buttons with transparent dark bodies,
-    glowing Neon Mint interactive border-edges, and high-tech typography.
+    Tactile custom buttons with deep obsidian backgrounds,
+    glowing Neon Green interactive border-edges, and high-tech monospace typography.
     """
     def __init__(self, master, **kwargs):
         super().__init__(
             master,
-            fg_color="#0d1b2a",
-            hover_color="#1b4965",
-            border_color="#00ffcc",
+            fg_color="#001400",
+            hover_color="#003300",
+            border_color="#00ff00",
             border_width=1.5,
-            text_color="#00ffcc",
-            font=("Segoe UI Semibold", 12, "bold"),
+            text_color="#00ff00",
+            font=("Consolas" if os.name == "nt" else "Courier", 12, "bold"),
             corner_radius=6,
             **kwargs
         )
@@ -165,14 +165,14 @@ class CyberButton(ctk.CTkButton):
 
 class CyberCard(ctk.CTkFrame):
     """
-    Futuristic semi-transparent "glassmorphic" panel with thin neon borders,
-    providing exceptional information hierarchy and ahead-of-its-time design depth.
+    Futuristic semi-transparent "glassmorphic" panel with thin green borders,
+    providing exceptional information hierarchy and design depth.
     """
     def __init__(self, master, **kwargs):
         super().__init__(
             master,
-            fg_color="#081017",
-            border_color="#102a43",
+            fg_color="#000700",
+            border_color="#003300",
             border_width=1.5,
             corner_radius=10,
             **kwargs

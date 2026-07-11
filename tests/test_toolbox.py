@@ -14,15 +14,15 @@ class TestCyberToolbox(unittest.TestCase):
     def test_translation_switch(self):
         """Verify dynamic locale language translation switching operates properly."""
         i18n = I18N("en")
-        self.assertEqual(i18n.get("app_title"), "NEO-GEN CYBER TOOLBOX")
+        self.assertEqual(i18n.get("app_title"), "NEO-GEN SENSORY CYBER COMMAND")
 
         # Switch language to Turkish
         i18n.set_language("tr")
-        self.assertEqual(i18n.get("app_title"), "NEO-GEN SİBER ARAÇ KUTUSU")
+        self.assertEqual(i18n.get("app_title"), "NEO-GEN SİBER KOMUTA MERKEZİ")
 
         # Switch language to Spanish
         i18n.set_language("es")
-        self.assertEqual(i18n.get("app_title"), "CAJA DE HERRAMIENTAS CIBERNÉTICAS NEO-GEN")
+        self.assertEqual(i18n.get("app_title"), "NEO-GEN COMANDO CIBERNÉTICO HUD")
 
     def test_secure_messaging_crypto(self):
         """Verify AES-256 secure messaging encryption and decryption works flawlessly."""
@@ -42,6 +42,19 @@ class TestCyberToolbox(unittest.TestCase):
         """Verify cryptography handling rejects empty encryption keys."""
         with self.assertRaises(ValueError):
             SecureVault.encrypt_message("secret", "")
+
+    def test_hash_generation(self):
+        """Verify correct file hashing using SHA-256 and MD5."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_file = os.path.join(tmpdir, "hash_test.txt")
+            with open(temp_file, "w") as f:
+                f.write("Cyber Matrix Code")
+
+            sha256_val = SecureVault.generate_file_hash(temp_file, "sha256")
+            md5_val = SecureVault.generate_file_hash(temp_file, "md5")
+
+            self.assertTrue(len(sha256_val) == 64)
+            self.assertTrue(len(md5_val) == 32)
 
     def test_exif_removal_utility(self):
         """Verify metadata exif remover produces a clean scrubbed image."""
