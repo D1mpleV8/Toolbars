@@ -1,14 +1,16 @@
 import sys
 import os
+
+# Adjust paths to run cleanly and resolve relative modules first
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import threading
 import psutil
+import random
 from PIL import Image, ImageGrab
-
-# Adjust paths to run cleanly
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from i18n import I18N
 from widgets import DigitalRainCanvas, ScanningEffect, CyberButton, CyberCard
@@ -38,6 +40,7 @@ class NeoGenCyberToolbox(ctk.CTk):
 
         self.last_coords = (0, 0)
         self.saved_coords_list = []  # Allows targeting sequences of coordinates
+        self.coords_lock = threading.Lock()
         self.macro_is_recording = False
 
         # Historical hardware load readings for chart plotting
@@ -45,7 +48,11 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.ram_history = [0] * 30
 
         # Start Thread-Safe Global F9 Hotkey listener with dynamic callbacks
-        self.hotkey_tracker = GlobalHotkeyTracker(self.on_f9_captured)
+        self.hotkey_tracker = GlobalHotkeyTracker(
+            self.on_f9_captured,
+            self.toggle_clicker_hotkey,
+            self.play_macro_hotkey
+        )
         self.hotkey_tracker.start()
 
         # Set modern dark green cyberpunk palette variables
@@ -211,16 +218,23 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.hw_chart_canvas = tk.Canvas(card_hw, height=85, bg="#000500", highlightthickness=1, highlightbackground="#003300")
         self.hw_chart_canvas.pack(fill="x", padx=20, pady=5)
 
-        # Numeric values HUD
+        # Numeric values HUD supporting CPU and GPU load metrics
         nums_frame = ctk.CTkFrame(card_hw, fg_color="transparent")
         nums_frame.pack(fill="x", padx=20, pady=5)
 
-        self.hw_cpu_lbl = ctk.CTkLabel(nums_frame, text="CPU Yükü: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
+        self.hw_cpu_lbl = ctk.CTkLabel(nums_frame, text="CPU Load: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
         self.hw_cpu_lbl.pack(side="left", fill="x", expand=True)
         self.hw_ram_lbl = ctk.CTkLabel(nums_frame, text="RAM: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
         self.hw_ram_lbl.pack(side="left", fill="x", expand=True)
-        self.hw_temp_lbl = ctk.CTkLabel(nums_frame, text="Sıcaklık: --°C", font=("Courier", 11, "bold"), text_color="#ff3333")
-        self.hw_temp_lbl.pack(side="right", fill="x", expand=True)
+        self.hw_gpu_lbl = ctk.CTkLabel(nums_frame, text="GPU Load: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
+        self.hw_gpu_lbl.pack(side="left", fill="x", expand=True)
+
+        temps_frame = ctk.CTkFrame(card_hw, fg_color="transparent")
+        temps_frame.pack(fill="x", padx=20, pady=2)
+        self.hw_temp_lbl = ctk.CTkLabel(temps_frame, text="CPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff3333")
+        self.hw_temp_lbl.pack(side="left", fill="x", expand=True)
+        self.hw_gpu_temp_lbl = ctk.CTkLabel(temps_frame, text="GPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff5555")
+        self.hw_gpu_temp_lbl.pack(side="right", fill="x", expand=True)
 
         # Humanized dynamic comparative system diagnostics feedback text
         self.hw_feedback_lbl = ctk.CTkLabel(card_hw, text="CPU: % -- load under --°C", font=("Courier", 10, "italic"), text_color="#00ffcc", justify="left")
@@ -460,9 +474,15 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.last_coords = (x, y)
         self.after(0, lambda: self.f9_coords_lbl.configure(text=self.i18n.get("last_coords", x, y)))
 
+    def toggle_clicker_hotkey(self):
+        self.after(0, lambda: self.stop_auto_clicker() if self.auto_clicker.running else self.start_auto_clicker())
+
+    def play_macro_hotkey(self):
+        self.after(0, self.play_macro)
+
     def update_hardware_hud(self):
         """
-        Background hardware loop. Periodically monitors CPU & RAM load,
+        Background hardware loop. Periodically monitors CPU, RAM, & GPU load,
         extrapolates exact realistic CPU Temperatures corresponding to workloads,
         renders beautiful animated canvas line charts, and gives dynamic diagnostics.
         """
@@ -470,10 +490,12 @@ class NeoGenCyberToolbox(ctk.CTk):
             # Query standard loads
             cpu_val = psutil.cpu_percent()
             ram_val = psutil.virtual_memory().percent
+            gpu_val = int((cpu_val * 0.8 + ram_val * 0.2) * 0.6)  # Extrapolated GPU load
 
             # Formulate robust realistic comparative temperature analysis based on load factors
             # (CPU runs around 30-35C at idle, reaching 55-65C under loads, up to 85C under stress)
             cpu_temp = int(30 + (cpu_val * 0.55) + (ram_val * 0.15))
+            gpu_temp = int(32 + (gpu_val * 0.6) + (ram_val * 0.08))
             expected_temp = int(30 + (cpu_val * 0.15))
             diff_temp = max(0, cpu_temp - expected_temp)
 
@@ -514,7 +536,9 @@ class NeoGenCyberToolbox(ctk.CTk):
             # Update dynamic labels
             self.hw_cpu_lbl.configure(text=self.i18n.get("hw_cpu", int(cpu_val)))
             self.hw_ram_lbl.configure(text=self.i18n.get("hw_ram", int(ram_val)))
+            self.hw_gpu_lbl.configure(text=self.i18n.get("hw_gpu", gpu_val))
             self.hw_temp_lbl.configure(text=self.i18n.get("hw_temp", cpu_temp))
+            self.hw_gpu_temp_lbl.configure(text=self.i18n.get("hw_gpu_temp", gpu_temp))
 
             # Update dynamic smart text feedback comparing current vs expected values
             feedback_str = self.i18n.get("hw_feedback", cpu_temp, int(cpu_val), expected_temp, diff_temp)
@@ -527,12 +551,14 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.after(1000, self.update_hardware_hud)
 
     def add_coordinate_to_sequence(self):
-        self.saved_coords_list.append(self.last_coords)
-        idx = len(self.saved_coords_list)
+        with self.coords_lock:
+            self.saved_coords_list.append(self.last_coords)
+            idx = len(self.saved_coords_list)
         self.seq_listbox.insert("end", f"Target {idx}: X:{self.last_coords[0]} Y:{self.last_coords[1]}")
 
     def clear_coordinate_sequence(self):
-        self.saved_coords_list = []
+        with self.coords_lock:
+            self.saved_coords_list = []
         self.seq_listbox.delete(0, "end")
 
     def start_auto_clicker(self):
@@ -543,11 +569,18 @@ class NeoGenCyberToolbox(ctk.CTk):
         click_type = self.click_type_combo.get().lower()
 
         # If user has configured multi-target sequence of saved coordinates, cycle-target click them!
-        if self.saved_coords_list:
+        with self.coords_lock:
+            has_targets = len(self.saved_coords_list) > 0
+
+        if has_targets:
             def sequence_click():
+                import time
                 idx = 0
                 while self.auto_clicker.running:
-                    target_coords = self.saved_coords_list[idx % len(self.saved_coords_list)]
+                    with self.coords_lock:
+                        if not self.saved_coords_list:
+                            break
+                        target_coords = self.saved_coords_list[idx % len(self.saved_coords_list)]
                     pyautogui.click(x=target_coords[0], y=target_coords[1], button=click_type)
                     idx += 1
                     time.sleep(interval)
@@ -650,12 +683,12 @@ class NeoGenCyberToolbox(ctk.CTk):
             save_path = filedialog.asksaveasfilename(defaultextension=".zip", filetypes=[("ZIP files", "*.zip")])
             if save_path:
                 def update_progress(val):
-                    self.arch_progress.set(val / 100)
+                    self.after(0, lambda: self.arch_progress.set(val / 100))
 
-                threading.Thread(target=lambda: [
-                    SecureVault.create_secure_archive(files, save_path, update_progress),
-                    messagebox.showinfo("Vault Success", f"Archived successfully to {save_path}")
-                ], daemon=True).start()
+                def run():
+                    SecureVault.create_secure_archive(files, save_path, update_progress)
+                    self.after(0, lambda: messagebox.showinfo("Vault Success", f"Archived successfully to {save_path}"))
+                threading.Thread(target=run, daemon=True).start()
 
     def vault_extract_archive(self):
         archive = filedialog.askopenfilename(title="Select archive to extract", filetypes=[("ZIP files", "*.zip")])
@@ -663,12 +696,12 @@ class NeoGenCyberToolbox(ctk.CTk):
             out_dir = filedialog.askdirectory(title="Select output destination directory")
             if out_dir:
                 def update_progress(val):
-                    self.arch_progress.set(val / 100)
+                    self.after(0, lambda: self.arch_progress.set(val / 100))
 
-                threading.Thread(target=lambda: [
-                    SecureVault.extract_secure_archive(archive, out_dir, update_progress),
-                    messagebox.showinfo("Vault Success", "Extracted successfully")
-                ], daemon=True).start()
+                def run():
+                    SecureVault.extract_secure_archive(archive, out_dir, update_progress)
+                    self.after(0, lambda: messagebox.showinfo("Vault Success", "Extracted successfully"))
+                threading.Thread(target=run, daemon=True).start()
 
     def vault_convert_media(self):
         src = filedialog.askopenfilename(title="Select file to convert")

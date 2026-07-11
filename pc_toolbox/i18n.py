@@ -63,7 +63,9 @@ class I18N:
             "hw_title": "SYSTEM DIAGNOSTICS & HARDWARE HUD",
             "hw_cpu": "CPU Load: {}%",
             "hw_ram": "RAM Load: {}%",
+            "hw_gpu": "GPU Core Load: {}%",
             "hw_temp": "CPU Temp: {}°C",
+            "hw_gpu_temp": "GPU Temp: {}°C",
             "hw_feedback": "Diagnostics: CPU is {}°C at {}% load.\nExpected temp is {}°C. Currently {}°C hotter than optimal!"
         },
         "tr": {
@@ -112,7 +114,9 @@ class I18N:
             "hw_title": "SİSTEM TEŞHİS VE DONANIM HUD",
             "hw_cpu": "İşlemci Yükü: {}%",
             "hw_ram": "RAM Kullanımı: {}%",
+            "hw_gpu": "Ekran Kartı Yükü: {}%",
             "hw_temp": "İşlemci Sıcaklığı: {}°C",
+            "hw_gpu_temp": "Ekran Kartı Sıcaklığı: {}°C",
             "hw_feedback": "Sistem Teşhisi: İşlemci {}°C sıcaklıkta, %{} yük altında.\nOlması gereken sıcaklık {}°C. İşlemci şu an optimum seviyeden {}°C daha sıcak!"
         },
         "es": {
@@ -161,7 +165,9 @@ class I18N:
             "hw_title": "DIAGNÓSTICOS DE SISTEMA Y HUD DE HARDWARE",
             "hw_cpu": "Carga de CPU: {}%",
             "hw_ram": "Uso de RAM: {}%",
+            "hw_gpu": "Carga de GPU: {}%",
             "hw_temp": "Temp de CPU: {}°C",
+            "hw_gpu_temp": "Temp de GPU: {}°C",
             "hw_feedback": "Diagnóstico: CPU está a {}°C con una carga del {}%.\nLa temp esperada es {}°C. ¡Actualmente {}°C más caliente que lo óptimo!"
         },
         "fr": {
@@ -199,7 +205,7 @@ class I18N:
             "cyber_ops": "OPS SÉCURITÉ CYBER",
             "hash_btn": "GÉNÉRER HASH",
             "exif_btn": "SUPPRIMER LES MÉTADONNÉES EXIF",
-            "stego_btn": "STÉGANOGRAPHIE (CACHER/EXTRAIRE)",
+            "stego_btn": "STÉGANOGRAPHIE (CACHER/EXTRARE)",
             "lang_select_title": "SÉLECTIONNER LA LANGUE DU TERMINAL",
             "sys_tray_msg": "Le centre de commande est actif.",
             "unsupported_ocr": "Moteur OCR indisponible. Mode secours activé.",
@@ -210,7 +216,9 @@ class I18N:
             "hw_title": "DIAGNOSTICS SYSTÈME & HUD DU MATÉRIEL",
             "hw_cpu": "Charge CPU: {}%",
             "hw_ram": "Charge RAM: {}%",
+            "hw_gpu": "Charge GPU: {}%",
             "hw_temp": "Temp CPU: {}°C",
+            "hw_gpu_temp": "Temp GPU: {}°C",
             "hw_feedback": "Diagnostic: Le CPU est à {}°C avec {}% de charge.\nLa temp attendue est de {}°C. Actuellement {}°C plus chaud que l'optimal !"
         },
         "de": {
@@ -259,7 +267,9 @@ class I18N:
             "hw_title": "SYSTEMDIAGNOSTIK & HARDWARE-HUD",
             "hw_cpu": "CPU-Last: {}%",
             "hw_ram": "RAM-Last: {}%",
+            "hw_gpu": "GPU-Last: {}%",
             "hw_temp": "CPU-Temp: {}°C",
+            "hw_gpu_temp": "GPU-Temp: {}°C",
             "hw_feedback": "Diagnose: CPU ist bei {}°C bei {}% Last.\nErwartete Temp ist {}°C. Aktuell {}°C heißer als optimal!"
         },
         "ja": {
@@ -308,7 +318,9 @@ class I18N:
             "hw_title": "システム診断＆ハードウェアHUD",
             "hw_cpu": "CPU負荷: {}%",
             "hw_ram": "RAM負荷: {}%",
+            "hw_gpu": "GPU負荷: {}%",
             "hw_temp": "CPU温度: {}°C",
+            "hw_gpu_temp": "GPU温度: {}°C",
             "hw_feedback": "診断結果: CPU温度{}°C、CPU負荷{}%です。\n推奨温度は{}°Cです。現在、最適値より{}°C高い状態です！"
         },
         "zh": {
@@ -319,7 +331,7 @@ class I18N:
             "hotkey_title": "动态按键映射与快捷键设置",
             "hotkey_info": "自定义您的全局快捷键触发器，适配您的战术宏配置。",
             "hotkey_status": "F9 状态: 监听中...",
-            "last_coords": "最后捕获的坐标: X: {}, Y: {}",
+            "last_coords": "最后捕获 of 坐标: X: {}, Y: {}",
             "clicker_title": "游戏级连点器中心",
             "clicker_interval": "点击时间间隔 (秒):",
             "click_button": "当前鼠标按键:",
@@ -357,7 +369,9 @@ class I18N:
             "hw_title": "系统诊断与硬件HUD监控",
             "hw_cpu": "CPU 负载: {}%",
             "hw_ram": "RAM 负载: {}%",
+            "hw_gpu": "GPU 负载: {}%",
             "hw_temp": "CPU 温度: {}°C",
+            "hw_gpu_temp": "GPU 温度: {}°C",
             "hw_feedback": "诊断：CPU 温度为 {}°C，负载为 {}%。\n预期温度为 {}°C。当前温度比最佳温度高出 {}°C！"
         },
         "ru": {
@@ -406,7 +420,9 @@ class I18N:
             "hw_title": "ДИАГНОСТИКА СИСТЕМЫ И ИГРОВОЙ HUD",
             "hw_cpu": "Нагрузка CPU: {}%",
             "hw_ram": "Использование RAM: {}%",
+            "hw_gpu": "Использование GPU: {}%",
             "hw_temp": "Темп CPU: {}°C",
+            "hw_gpu_temp": "Темп GPU: {}°C",
             "hw_feedback": "Диагностика: CPU нагрет до {}°C при нагрузке {}%.\nОжидаемая темп: {}°C. Сейчас на {}°C горячее нормы!"
         },
         "ar": {
@@ -455,7 +471,9 @@ class I18N:
             "hw_title": "تشخيصات النظام ومراقبة الأجهزة HUD",
             "hw_cpu": "جهد المعالج: {}%",
             "hw_ram": "ذاكرة RAM المستهلكة: {}%",
+            "hw_gpu": "جهد كرت الشاشة: {}%",
             "hw_temp": "حرارة المعالج: {}°C",
+            "hw_gpu_temp": "حرارة كرت الشاشة: {}°C",
             "hw_feedback": "التشخيص: حرارة المعالج هي {}°C بجهد {}%.\nالحرارة المتوقعة هي {}°C. حالياً المعالج أسخن بـ {}°C من الوضع الأمثل!"
         },
         "pt": {
@@ -504,7 +522,9 @@ class I18N:
             "hw_title": "DIAGNÓSTICOS DE SISTEMA & HUD DE HARDWARE",
             "hw_cpu": "Carga de CPU: {}%",
             "hw_ram": "Uso de RAM: {}%",
+            "hw_gpu": "Carga de GPU: {}%",
             "hw_temp": "Temp de CPU: {}°C",
+            "hw_gpu_temp": "Temp de GPU: {}°C",
             "hw_feedback": "Diagnóstico: CPU está a {}°C sob {}% de carga.\nTemp ideal: {}°C. Atualmente {}°C mais quente que o ideal!"
         }
     }

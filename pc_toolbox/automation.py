@@ -6,20 +6,46 @@ import pyperclip
 
 class GlobalHotkeyTracker:
     """
-    Background listener for F9 global coordinate capture.
-    Allows capturing cursor position globally.
+    Highly advanced dynamically rebindable always-on global hotkey system.
+    Dynamically maps hotkey strings to action triggers.
     """
-    def __init__(self, callback):
-        self.callback = callback
+    def __init__(self, coord_cb, clicker_cb, macro_cb):
+        self.coord_cb = coord_cb
+        self.clicker_cb = clicker_cb
+        self.macro_cb = macro_cb
+
+        # Default rebindable hotkeys
+        self.key_coord = "F9"
+        self.key_clicker = "F10"
+        self.key_macro = "F11"
+
         self.listener = None
+
+    def update_keybinds(self, key_coord, key_clicker, key_macro):
+        self.key_coord = key_coord.strip().upper()
+        self.key_clicker = key_clicker.strip().upper()
+        self.key_macro = key_macro.strip().upper()
+
+    def _get_key_str(self, key):
+        try:
+            if hasattr(key, 'char') and key.char is not None:
+                return key.char.upper()
+            else:
+                return str(key).replace("Key.", "").upper()
+        except Exception:
+            return ""
 
     def _on_press(self, key):
         try:
-            if key == keyboard.Key.f9:
-                # Capture current mouse position
+            key_str = self._get_key_str(key)
+            if key_str == self.key_coord:
                 m_controller = mouse.Controller()
                 pos = m_controller.position
-                self.callback(pos[0], pos[1])
+                self.coord_cb(pos[0], pos[1])
+            elif key_str == self.key_clicker:
+                self.clicker_cb()
+            elif key_str == self.key_macro:
+                self.macro_cb()
         except Exception:
             pass
 
@@ -117,9 +143,6 @@ class MacroRecorder:
 
     def _on_press(self, key):
         if self.recording:
-            # Ignore F9 coordinate tracker key from entering macro sequences to avoid loop
-            if key == keyboard.Key.f9:
-                return
             elapsed = time.time() - self.start_time
             try:
                 char = key.char
