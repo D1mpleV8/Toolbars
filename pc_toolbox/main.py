@@ -10,10 +10,11 @@ from tkinter import filedialog, messagebox
 import threading
 import psutil
 import random
+import time
 from PIL import Image, ImageGrab
 
 from i18n import I18N
-from widgets import DigitalRainCanvas, ScanningEffect, CyberButton, CyberCard
+from widgets import CyberSpaceCanvas, ScanningEffect, CyberButton, CyberCard
 from automation import GlobalHotkeyTracker, AutoClicker, MacroRecorder, SmartClipboard
 from vault import SecureVault
 
@@ -30,7 +31,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         # Configure advanced layout properties
         self.title("NEO-GEN SENSORY CYBER COMMAND")
         self.geometry("1180x850")
-        self.configure(fg_color="#000000")
+        self.configure(fg_color="#07080b")
 
         # Initialize core state and logic modules
         self.i18n = I18N("en")
@@ -47,17 +48,23 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.cpu_history = [0] * 30
         self.ram_history = [0] * 30
 
-        # Start Thread-Safe Global F9 Hotkey listener with dynamic callbacks
+        # Default hotkey configurations
+        self.key_coord = "F9"
+        self.key_clicker = "F10"
+        self.key_macro = "F11"
+
+        # Start Thread-Safe Global Hotkey listener with dynamic callbacks
         self.hotkey_tracker = GlobalHotkeyTracker(
             self.on_f9_captured,
             self.toggle_clicker_hotkey,
             self.play_macro_hotkey
         )
+        self.hotkey_tracker.update_keybinds(self.key_coord, self.key_clicker, self.key_macro)
         self.hotkey_tracker.start()
 
-        # Set modern dark green cyberpunk palette variables
+        # Set modern dark blue/violet cyberpunk palette variables
         ctk.set_appearance_mode("Dark")
-        ctk.set_default_color_theme("green")
+        ctk.set_default_color_theme("blue")
 
         self.build_ui()
 
@@ -69,8 +76,8 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.update_hardware_hud()
 
     def build_ui(self):
-        # Breathtaking background dynamic Matrix Rain canvas
-        self.bg_canvas = DigitalRainCanvas(self)
+        # Breathtaking background dynamic vector space canvas
+        self.bg_canvas = CyberSpaceCanvas(self)
         self.bg_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
         # Main overlay container frame
@@ -85,7 +92,7 @@ class NeoGenCyberToolbox(ctk.CTk):
             header_frame,
             text=self.i18n.get("app_title"),
             font=("Segoe UI Semibold" if os.name == "nt" else "Courier", 24, "bold"),
-            text_color="#00ff00"
+            text_color="#00f0ff"
         )
         self.title_label.pack(side="left", padx=15)
 
@@ -94,8 +101,8 @@ class NeoGenCyberToolbox(ctk.CTk):
             header_frame,
             text="HUD SECURE // ONLINE",
             font=("Consolas" if os.name == "nt" else "Courier", 11, "bold"),
-            text_color="#00ffcc",
-            fg_color="#001a00",
+            text_color="#00f0ff",
+            fg_color="#090d16",
             corner_radius=4,
             padx=10,
             pady=4
@@ -103,19 +110,19 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.hud_status_lbl.pack(side="right", padx=15)
 
         # Glowing divider
-        divider = ctk.CTkFrame(self.main_container, height=2, fg_color="#003300")
+        divider = ctk.CTkFrame(self.main_container, height=2, fg_color="#181e2b")
         divider.pack(fill="x", padx=10, pady=(0, 10))
 
         # Breathtaking Spacious TabView controller
         self.tab_view = ctk.CTkTabview(
             self.main_container,
-            fg_color="#000700",
-            segmented_button_fg_color="#001400",
-            segmented_button_selected_color="#00ff00",
-            segmented_button_selected_hover_color="#00ffcc",
-            segmented_button_unselected_color="#000a00",
-            segmented_button_unselected_hover_color="#002200",
-            text_color="#00ff00"
+            fg_color="#090a0f",
+            segmented_button_fg_color="#12141c",
+            segmented_button_selected_color="#8a2be2",
+            segmented_button_selected_hover_color="#00f0ff",
+            segmented_button_unselected_color="#0a0b10",
+            segmented_button_unselected_hover_color="#181e2b",
+            text_color="#00f0ff"
         )
         self.tab_view._segmented_button.configure(font=("Segoe UI Semibold" if os.name == "nt" else "Courier", 13, "bold"))
         self.tab_view.pack(fill="both", expand=True, padx=10, pady=5)
@@ -138,23 +145,54 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_hk = CyberCard(left_panel)
         card_hk.pack(fill="x", pady=(0, 15), ipady=8)
 
-        self.f9_title = ctk.CTkLabel(card_hk, text="", font=("Courier", 15, "bold"), text_color="#00ff00")
+        self.f9_title = ctk.CTkLabel(card_hk, text="", font=("Courier", 15, "bold"), text_color="#00f0ff")
         self.f9_title.pack(anchor="w", padx=20, pady=(10, 5))
 
-        self.f9_info = ctk.CTkLabel(card_hk, text="", font=("Courier", 11), text_color="#00ffcc", justify="left")
+        self.f9_info = ctk.CTkLabel(card_hk, text="", font=("Courier", 11), text_color="#00f0ff", justify="left")
         self.f9_info.pack(anchor="w", padx=20, pady=2)
 
         self.f9_coords_lbl = ctk.CTkLabel(card_hk, text="", font=("Courier", 14, "bold"), text_color="#ffffff")
         self.f9_coords_lbl.pack(anchor="w", padx=20, pady=(5, 5))
 
+        # Dynamic Keybind configuration panel inside the UI
+        self.hk_setup_title = ctk.CTkLabel(card_hk, text="REBIND HOTKEYS / KISAYOLLAR", font=("Courier", 11, "bold"), text_color="#8a2be2")
+        self.hk_setup_title.pack(anchor="w", padx=20, pady=(5, 2))
+
+        hk_entry_frame = ctk.CTkFrame(card_hk, fg_color="transparent")
+        hk_entry_frame.pack(fill="x", padx=20, pady=2)
+
+        # Entry for F9 Coord
+        coord_ent_lbl = ctk.CTkLabel(hk_entry_frame, text="Coord Capture:", font=("Courier", 10), text_color="#00f0ff")
+        coord_ent_lbl.grid(row=0, column=0, padx=5, pady=2, sticky="w")
+        self.coord_ent_val = ctk.CTkEntry(hk_entry_frame, width=70, fg_color="#000000", border_color="#181e2b", text_color="#ffffff")
+        self.coord_ent_val.insert(0, "F9")
+        self.coord_ent_val.grid(row=0, column=1, padx=5, pady=2)
+
+        # Entry for F10 Clicker
+        click_ent_lbl = ctk.CTkLabel(hk_entry_frame, text="Clicker Hotkey:", font=("Courier", 10), text_color="#00f0ff")
+        click_ent_lbl.grid(row=0, column=2, padx=5, pady=2, sticky="w")
+        self.click_ent_val = ctk.CTkEntry(hk_entry_frame, width=70, fg_color="#000000", border_color="#181e2b", text_color="#ffffff")
+        self.click_ent_val.insert(0, "F10")
+        self.click_ent_val.grid(row=0, column=3, padx=5, pady=2)
+
+        # Entry for F11 Macro
+        macro_ent_lbl = ctk.CTkLabel(hk_entry_frame, text="Macro Play:", font=("Courier", 10), text_color="#00f0ff")
+        macro_ent_lbl.grid(row=0, column=4, padx=5, pady=2, sticky="w")
+        self.macro_ent_val = ctk.CTkEntry(hk_entry_frame, width=70, fg_color="#000000", border_color="#181e2b", text_color="#ffffff")
+        self.macro_ent_val.insert(0, "F11")
+        self.macro_ent_val.grid(row=0, column=5, padx=5, pady=2)
+
+        self.btn_rebind_hks = CyberButton(card_hk, text="SAVE & APPLY HOTKEYS", height=28, command=self.apply_new_hotkeys)
+        self.btn_rebind_hks.pack(fill="x", padx=20, pady=(5, 10))
+
         # Coordinates Multi-target Sequence list
         self.seq_listbox = tk.Listbox(
             card_hk,
-            bg="#000000",
-            fg="#00ffcc",
-            selectbackground="#00ff00",
-            selectforeground="#000000",
-            highlightcolor="#00ffcc",
+            bg="#07080b",
+            fg="#00f0ff",
+            selectbackground="#8a2be2",
+            selectforeground="#ffffff",
+            highlightcolor="#00f0ff",
             height=4,
             borderwidth=1,
             relief="flat",
@@ -173,7 +211,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_clicker = CyberCard(left_panel)
         card_clicker.pack(fill="both", expand=True, ipady=10)
 
-        self.click_title = ctk.CTkLabel(card_clicker, text="", font=("Courier", 16, "bold"), text_color="#00ff00")
+        self.click_title = ctk.CTkLabel(card_clicker, text="", font=("Courier", 16, "bold"), text_color="#00f0ff")
         self.click_title.pack(anchor="w", padx=20, pady=(12, 5))
 
         inputs_frame = ctk.CTkFrame(card_clicker, fg_color="transparent")
@@ -181,17 +219,17 @@ class NeoGenCyberToolbox(ctk.CTk):
 
         int_frame = ctk.CTkFrame(inputs_frame, fg_color="transparent")
         int_frame.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        self.lbl_interval = ctk.CTkLabel(int_frame, text="", font=("Courier", 12), text_color="#00ffcc")
+        self.lbl_interval = ctk.CTkLabel(int_frame, text="", font=("Courier", 12), text_color="#00f0ff")
         self.lbl_interval.pack(anchor="w")
-        self.click_interval_ent = ctk.CTkEntry(int_frame, placeholder_text="1.0", fg_color="#000000", border_color="#003300", text_color="#ffffff")
+        self.click_interval_ent = ctk.CTkEntry(int_frame, placeholder_text="1.0", fg_color="#000000", border_color="#181e2b", text_color="#ffffff")
         self.click_interval_ent.insert(0, "1.0")
         self.click_interval_ent.pack(fill="x", pady=5)
 
         type_frame = ctk.CTkFrame(inputs_frame, fg_color="transparent")
         type_frame.pack(side="right", fill="x", expand=True, padx=(10, 0))
-        self.lbl_click_type = ctk.CTkLabel(type_frame, text="", font=("Courier", 12), text_color="#00ffcc")
+        self.lbl_click_type = ctk.CTkLabel(type_frame, text="", font=("Courier", 12), text_color="#00f0ff")
         self.lbl_click_type.pack(anchor="w")
-        self.click_type_combo = ctk.CTkComboBox(type_frame, values=["Left", "Right"], fg_color="#000000", border_color="#003300", button_color="#003300", button_hover_color="#005500", text_color="#ffffff")
+        self.click_type_combo = ctk.CTkComboBox(type_frame, values=["Left", "Right"], fg_color="#000000", border_color="#181e2b", button_color="#12141c", button_hover_color="#181e2b", text_color="#ffffff")
         self.click_type_combo.pack(fill="x", pady=5)
 
         btn_click_frame = ctk.CTkFrame(card_clicker, fg_color="transparent")
@@ -211,43 +249,43 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_hw = CyberCard(right_panel)
         card_hw.pack(fill="x", pady=(0, 15), ipady=10)
 
-        self.hw_title_lbl = ctk.CTkLabel(card_hw, text="", font=("Courier", 15, "bold"), text_color="#00ff00")
+        self.hw_title_lbl = ctk.CTkLabel(card_hw, text="", font=("Courier", 15, "bold"), text_color="#00f0ff")
         self.hw_title_lbl.pack(anchor="w", padx=20, pady=(10, 5))
 
         # Dynamic Canvas for Visual Charts drawing
-        self.hw_chart_canvas = tk.Canvas(card_hw, height=85, bg="#000500", highlightthickness=1, highlightbackground="#003300")
+        self.hw_chart_canvas = tk.Canvas(card_hw, height=85, bg="#07080b", highlightthickness=1, highlightbackground="#181e2b")
         self.hw_chart_canvas.pack(fill="x", padx=20, pady=5)
 
         # Numeric values HUD supporting CPU and GPU load metrics
         nums_frame = ctk.CTkFrame(card_hw, fg_color="transparent")
         nums_frame.pack(fill="x", padx=20, pady=5)
 
-        self.hw_cpu_lbl = ctk.CTkLabel(nums_frame, text="CPU Load: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
+        self.hw_cpu_lbl = ctk.CTkLabel(nums_frame, text="CPU Load: --%", font=("Courier", 11, "bold"), text_color="#00f0ff")
         self.hw_cpu_lbl.pack(side="left", fill="x", expand=True)
-        self.hw_ram_lbl = ctk.CTkLabel(nums_frame, text="RAM: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
+        self.hw_ram_lbl = ctk.CTkLabel(nums_frame, text="RAM: --%", font=("Courier", 11, "bold"), text_color="#00f0ff")
         self.hw_ram_lbl.pack(side="left", fill="x", expand=True)
-        self.hw_gpu_lbl = ctk.CTkLabel(nums_frame, text="GPU Load: --%", font=("Courier", 11, "bold"), text_color="#00ffcc")
+        self.hw_gpu_lbl = ctk.CTkLabel(nums_frame, text="GPU Load: --%", font=("Courier", 11, "bold"), text_color="#00f0ff")
         self.hw_gpu_lbl.pack(side="left", fill="x", expand=True)
 
         temps_frame = ctk.CTkFrame(card_hw, fg_color="transparent")
         temps_frame.pack(fill="x", padx=20, pady=2)
-        self.hw_temp_lbl = ctk.CTkLabel(temps_frame, text="CPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff3333")
+        self.hw_temp_lbl = ctk.CTkLabel(temps_frame, text="CPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff007f")
         self.hw_temp_lbl.pack(side="left", fill="x", expand=True)
-        self.hw_gpu_temp_lbl = ctk.CTkLabel(temps_frame, text="GPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff5555")
+        self.hw_gpu_temp_lbl = ctk.CTkLabel(temps_frame, text="GPU Temp: --°C", font=("Courier", 11, "bold"), text_color="#ff007f")
         self.hw_gpu_temp_lbl.pack(side="right", fill="x", expand=True)
 
         # Humanized dynamic comparative system diagnostics feedback text
-        self.hw_feedback_lbl = ctk.CTkLabel(card_hw, text="CPU: % -- load under --°C", font=("Courier", 10, "italic"), text_color="#00ffcc", justify="left")
+        self.hw_feedback_lbl = ctk.CTkLabel(card_hw, text="CPU: % -- load under --°C", font=("Courier", 10, "italic"), text_color="#00f0ff", justify="left")
         self.hw_feedback_lbl.pack(fill="x", padx=20, pady=(5, 10))
 
         # Card 3: Macro Sequence Recorder
         card_macro = CyberCard(right_panel)
         card_macro.pack(fill="x", pady=(0, 15), ipady=10)
 
-        self.macro_lbl = ctk.CTkLabel(card_macro, text="", font=("Courier", 16, "bold"), text_color="#00ff00")
+        self.macro_lbl = ctk.CTkLabel(card_macro, text="", font=("Courier", 16, "bold"), text_color="#00f0ff")
         self.macro_lbl.pack(anchor="w", padx=20, pady=(15, 5))
 
-        self.macro_status_lbl = ctk.CTkLabel(card_macro, text="", font=("Courier", 12, "italic"), text_color="#00ffcc")
+        self.macro_status_lbl = ctk.CTkLabel(card_macro, text="", font=("Courier", 12, "italic"), text_color="#00f0ff")
         self.macro_status_lbl.pack(anchor="w", padx=20, pady=5)
 
         btn_macro_frame = ctk.CTkFrame(card_macro, fg_color="transparent")
@@ -266,16 +304,16 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_utilities = CyberCard(right_panel)
         card_utilities.pack(fill="both", expand=True, ipady=10)
 
-        self.clip_lbl = ctk.CTkLabel(card_utilities, text="", font=("Courier", 15, "bold"), text_color="#00ff00")
+        self.clip_lbl = ctk.CTkLabel(card_utilities, text="", font=("Courier", 15, "bold"), text_color="#00f0ff")
         self.clip_lbl.pack(anchor="w", padx=20, pady=(15, 5))
 
         self.clip_listbox = tk.Listbox(
             card_utilities,
-            bg="#000000",
-            fg="#00ff00",
-            selectbackground="#00ff00",
-            selectforeground="#000000",
-            highlightcolor="#00ffcc",
+            bg="#07080b",
+            fg="#00f0ff",
+            selectbackground="#8a2be2",
+            selectforeground="#ffffff",
+            highlightcolor="#00f0ff",
             borderwidth=1,
             relief="flat",
             font=("Courier", 10, "bold")
@@ -307,17 +345,17 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_crypto = CyberCard(v_left)
         card_crypto.pack(fill="both", expand=True, pady=(0, 15), ipady=10)
 
-        self.enc_title_lbl = ctk.CTkLabel(card_crypto, text="", font=("Courier", 16, "bold"), text_color="#00ff00")
+        self.enc_title_lbl = ctk.CTkLabel(card_crypto, text="", font=("Courier", 16, "bold"), text_color="#00f0ff")
         self.enc_title_lbl.pack(anchor="w", padx=20, pady=(15, 10))
 
-        self.key_lbl_title = ctk.CTkLabel(card_crypto, text="", font=("Courier", 12), text_color="#00ffcc")
+        self.key_lbl_title = ctk.CTkLabel(card_crypto, text="", font=("Courier", 12), text_color="#00f0ff")
         self.key_lbl_title.pack(anchor="w", padx=20)
-        self.vault_key_ent = ctk.CTkEntry(card_crypto, show="*", fg_color="#000000", border_color="#003300", text_color="#ffffff")
+        self.vault_key_ent = ctk.CTkEntry(card_crypto, show="*", fg_color="#000000", border_color="#181e2b", text_color="#ffffff")
         self.vault_key_ent.pack(fill="x", padx=20, pady=5)
 
-        self.msg_input_lbl = ctk.CTkLabel(card_crypto, text="", font=("Courier", 12), text_color="#00ffcc")
+        self.msg_input_lbl = ctk.CTkLabel(card_crypto, text="", font=("Courier", 12), text_color="#00f0ff")
         self.msg_input_lbl.pack(anchor="w", padx=20)
-        self.vault_text_box = ctk.CTkTextbox(card_crypto, height=130, fg_color="#000000", border_color="#003300", border_width=1, text_color="#ffffff", font=("Courier", 11, "bold"))
+        self.vault_text_box = ctk.CTkTextbox(card_crypto, height=130, fg_color="#000000", border_color="#181e2b", border_width=1, text_color="#ffffff", font=("Courier", 11, "bold"))
         self.vault_text_box.pack(fill="both", expand=True, padx=20, pady=5)
 
         crypto_btns = ctk.CTkFrame(card_crypto, fg_color="transparent")
@@ -331,10 +369,10 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_archive = CyberCard(v_left)
         card_archive.pack(fill="x", ipady=10)
 
-        self.arch_title_lbl = ctk.CTkLabel(card_archive, text="", font=("Courier", 16, "bold"), text_color="#00ff00")
+        self.arch_title_lbl = ctk.CTkLabel(card_archive, text="", font=("Courier", 16, "bold"), text_color="#00f0ff")
         self.arch_title_lbl.pack(anchor="w", padx=20, pady=(15, 5))
 
-        self.arch_progress = ctk.CTkProgressBar(card_archive, progress_color="#00ff00", fg_color="#001400")
+        self.arch_progress = ctk.CTkProgressBar(card_archive, progress_color="#00f0ff", fg_color="#090d16")
         self.arch_progress.set(0)
         self.arch_progress.pack(fill="x", padx=20, pady=10)
 
@@ -353,7 +391,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_format = CyberCard(v_right)
         card_format.pack(fill="x", pady=(0, 15), ipady=10)
 
-        self.conv_lbl_title = ctk.CTkLabel(card_format, text="", font=("Courier", 15, "bold"), text_color="#00ff00")
+        self.conv_lbl_title = ctk.CTkLabel(card_format, text="", font=("Courier", 15, "bold"), text_color="#00f0ff")
         self.conv_lbl_title.pack(anchor="w", padx=20, pady=(15, 5))
         self.btn_convert_media = CyberButton(card_format, text="", command=self.vault_convert_media)
         self.btn_convert_media.pack(fill="x", padx=20, pady=10)
@@ -362,7 +400,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         card_ops = CyberCard(v_right)
         card_ops.pack(fill="both", expand=True, ipady=10)
 
-        self.cyber_ops_lbl = ctk.CTkLabel(card_ops, text="", font=("Courier", 15, "bold"), text_color="#00ff00")
+        self.cyber_ops_lbl = ctk.CTkLabel(card_ops, text="", font=("Courier", 15, "bold"), text_color="#00f0ff")
         self.cyber_ops_lbl.pack(anchor="w", padx=20, pady=(15, 10))
 
         ops_grid = ctk.CTkFrame(card_ops, fg_color="transparent")
@@ -388,7 +426,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         locale_card = CyberCard(tab)
         locale_card.pack(fill="both", expand=True, padx=40, pady=40, ipady=20)
 
-        self.lang_title_lbl = ctk.CTkLabel(locale_card, text="", font=("Courier", 18, "bold"), text_color="#00ff00")
+        self.lang_title_lbl = ctk.CTkLabel(locale_card, text="", font=("Courier", 18, "bold"), text_color="#00f0ff")
         self.lang_title_lbl.pack(pady=30)
 
         grid_frame = ctk.CTkFrame(locale_card, fg_color="transparent")
@@ -444,7 +482,7 @@ class NeoGenCyberToolbox(ctk.CTk):
         self.btn_pick_color.configure(text=self.i18n.get("pick_color_btn"))
         self.btn_run_ocr.configure(text=self.i18n.get("ocr_btn"))
 
-        # New Hardware translation strings
+        # Hardware translation strings
         self.hw_title_lbl.configure(text=self.i18n.get("hw_title"))
 
         # Vault strings
@@ -468,6 +506,29 @@ class NeoGenCyberToolbox(ctk.CTk):
 
         # Locale strings
         self.lang_title_lbl.configure(text=self.i18n.get("lang_select_title"))
+
+    def apply_new_hotkeys(self):
+        """
+        Dynamically applies customized hotkeys from the entry values directly
+        to the background keyboard and mouse tracker instances.
+        """
+        try:
+            k_coord = self.coord_ent_val.get().strip().upper()
+            k_clicker = self.click_ent_val.get().strip().upper()
+            k_macro = self.macro_ent_val.get().strip().upper()
+
+            if not k_coord or not k_clicker or not k_macro:
+                messagebox.showerror("Error", "Hotkeys cannot be empty / Kısayollar boş bırakılamaz.")
+                return
+
+            self.key_coord = k_coord
+            self.key_clicker = k_clicker
+            self.key_macro = k_macro
+
+            self.hotkey_tracker.update_keybinds(k_coord, k_clicker, k_macro)
+            messagebox.showinfo("Hotkeys Bound", f"Applied Successfully!\nCapture: {k_coord}\nClicker: {k_clicker}\nMacro: {k_macro}")
+        except Exception as e:
+            messagebox.showerror("Rebinding Error", str(e))
 
     # Thread-Safe automation controller methods offloaded to Tkinter Main Event Loop
     def on_f9_captured(self, x, y):
@@ -515,7 +576,7 @@ class NeoGenCyberToolbox(ctk.CTk):
                 # Render clean structural grid line markers
                 for k in range(1, 4):
                     grid_y = h * (k / 4)
-                    self.hw_chart_canvas.create_line(0, grid_y, w, grid_y, fill="#001800", width=1)
+                    self.hw_chart_canvas.create_line(0, grid_y, w, grid_y, fill="#181e2b", width=1)
 
                 # Plot CPU load vector line (Neon Mint)
                 for i in range(29):
@@ -523,15 +584,15 @@ class NeoGenCyberToolbox(ctk.CTk):
                     y1 = h - (self.cpu_history[i] / 100 * h * 0.8) - 5
                     x2 = (i + 1) * step
                     y2 = h - (self.cpu_history[i+1] / 100 * h * 0.8) - 5
-                    self.hw_chart_canvas.create_line(x1, y1, x2, y2, fill="#00ffcc", width=1.5)
+                    self.hw_chart_canvas.create_line(x1, y1, x2, y2, fill="#00f0ff", width=1.5)
 
-                # Plot RAM load vector line (Aurora Green)
+                # Plot RAM load vector line (Aurora Violet)
                 for i in range(29):
                     x1 = i * step
                     y1 = h - (self.ram_history[i] / 100 * h * 0.8) - 5
                     x2 = (i + 1) * step
                     y2 = h - (self.ram_history[i+1] / 100 * h * 0.8) - 5
-                    self.hw_chart_canvas.create_line(x1, y1, x2, y2, fill="#00ff00", width=1.5, dash=(2, 2))
+                    self.hw_chart_canvas.create_line(x1, y1, x2, y2, fill="#8a2be2", width=1.5, dash=(2, 2))
 
             # Update dynamic labels
             self.hw_cpu_lbl.configure(text=self.i18n.get("hw_cpu", int(cpu_val)))
@@ -727,7 +788,7 @@ class NeoGenCyberToolbox(ctk.CTk):
             dest = filedialog.asksaveasfilename(title="Save Cleared Image as", defaultextension=".png", filetypes=[("PNG", "*.png")])
             if dest:
                 if SecureVault.remove_exif_metadata(src, dest):
-                    messagebox.showinfo("Cyber Ops Success", "EXIF metadata metadata scrubbed successfully.")
+                    messagebox.showinfo("Cyber Ops Success", "EXIF metadata scrubbed successfully.")
                 else:
                     messagebox.showerror("Error", "Could not scrub EXIF.")
 
@@ -735,15 +796,15 @@ class NeoGenCyberToolbox(ctk.CTk):
         steg_win = ctk.CTkToplevel(self)
         steg_win.title("Steganography Panel")
         steg_win.geometry("520x420")
-        steg_win.configure(fg_color="#000700")
+        steg_win.configure(fg_color="#07080b")
 
         # Bring to top
         steg_win.attributes("-topmost", True)
 
-        lbl = ctk.CTkLabel(steg_win, text="STEGANOGRAPHY WORKSTATION", font=("Courier", 16, "bold"), text_color="#00ff00")
+        lbl = ctk.CTkLabel(steg_win, text="STEGANOGRAPHY WORKSTATION", font=("Courier", 16, "bold"), text_color="#00f0ff")
         lbl.pack(pady=15)
 
-        txt_box = ctk.CTkTextbox(steg_win, height=110, fg_color="#000000", text_color="#ffffff", border_color="#003300", border_width=1, font=("Courier", 11, "bold"))
+        txt_box = ctk.CTkTextbox(steg_win, height=110, fg_color="#000000", text_color="#ffffff", border_color="#181e2b", border_width=1, font=("Courier", 11, "bold"))
         txt_box.pack(fill="x", padx=20, pady=5)
 
         def handle_hide():
